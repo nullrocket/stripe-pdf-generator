@@ -1,0 +1,173 @@
+-
+  date_formatted = moment.unix(date).locale(language).format(date_format);
+  due_date_formatted = (due_days && !isNaN(due_days)) ? moment.unix(date).add(due_days, 'day').locale(language).format(date_format) : date_formatted;
+
+  company_logo_path = company_logo ? path.resolve(company_logo.toString()) : null;
+  if(company_logo_path && fs.existsSync(company_logo_path)) {
+    dimensions = sizeOf(company_logo);
+    logo_height = dimensions.height*(300/dimensions.width);
+  }
+  created_formatted = moment.unix(created).local(language).format(date_format);
+  total = (total/100).toFixed(2);
+  subtotal = (subtotal/100).toFixed(2);
+  tax_percent = tax_percent || 0;
+
+  lines.data.forEach(line => {
+    line.price = (line.type == 'subscription') ? (line.plan.amount/100).toFixed(2) : (line.amount/100).toFixed(2);
+    line.amount = (line.amount/100).toFixed(2);
+    if(line.period) {
+            line.period.start = moment.unix(line.period.start).locale(language).format(date_format);
+            line.period.end = moment.unix(line.period.end).locale(language).format(date_format);
+            line.between =  line.period.start + ' - ' + line.period.end;
+          }
+
+    if(!line.description && line.type == 'subscription') {
+      line.description = ((line.quantity > 1) ? line.quantity + ' * ' : '') + line.plan.name;
+      if(line.period) {
+        line.period.start = moment.unix(line.period.start).locale(language).format(date_format);
+        line.period.end = moment.unix(line.period.end).locale(language).format(date_format);
+        line.description += ' xx' + line.period.start + ' - ' + line.period.end;
+      }
+    }
+  });
+
+  let cssText = ""
+  css.forEach((sheet)=>{
+
+  cssText += fs.readFileSync(sheet,"utf8");
+
+  });
+
+  cssText = cssText.replace("!!host!!",host);
+
+doctype
+html.no-js
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    title
+    meta(name='description', content='')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+
+    style
+      if color
+        | .total h1 {
+        |   color: #{color};
+        | }
+      if company_logo
+        | .logo {
+        |   background-image: url("#{company_logo}");
+        |   width: 300px;
+        |   background-repeat:  no-repeat;
+        |   background-size: 300px;
+        |   height: #{logo_height}px;
+        | }
+      | #{cssText}
+
+  body.layout
+    .row.header
+      .col-xs-8.upper.company-name
+        | #{business_name}
+      .col-xs-4.invoice.align-right
+        | Receipt
+    .row
+      .col-xs-3
+        div.header-section-title
+          | Paid To
+        div.business-address
+          div
+            | #{business_name}
+          div
+            | #{business_address.line1}
+          div
+            | #{business_address.line2}
+          div
+            | #{business_address.city}, #{business_address.state}, #{business_address.postal_code}
+          div
+            | #{support_url}
+          div
+            | #{support_email}
+      .col-xs-3
+        div.header-section-title
+          | Paid By
+        div.business-address
+          div
+            | #{customer_id}
+          div
+            | #{extra}
+          div
+            | #{customer_email}
+          div
+          if vat
+            | VAT: #{vat}
+      .col-xs-6
+        .row
+          .col-xs-6.align-right.header-section-title
+            | #{label_receipt_number}
+          .col-xs-6.align-right
+            | #{receipt_number}
+        .row
+          .col-xs-6.align-right.header-section-title
+            | #{label_invoice_number}
+          .col-xs-6.align-right
+            | #{number}
+        .row
+          .col-xs-6.align-right.header-section-title
+            | #{label_invoice_date}
+          .col-xs-6.align-right
+            | #{date_formatted}
+        .row
+          .col-xs-6.align-right.header-section-title
+            | #{label_invoice_paid_date}
+          .col-xs-6.align-right
+            | #{created_formatted}
+        .row
+          .col-xs-6.align-right.header-section-title
+            | Payment Method
+          .col-xs-6.align-right
+            | #{payment_by}
+    .row
+      .col-xs-12
+        h1
+          if currency_position_before
+            | #{currency_symbol}#{total} #{label_paid_on} #{created_formatted}
+    .row.line-item-titles
+      .col-xs-6.line-item-title
+        | Description
+      .col-xs-2.line-item-title.align-right
+        | Qty
+      .col-xs-2.line-item-title.align-right
+        | Unit Price
+      .col-xs-2.line-item-title.align-right
+        | Amount
+    each line in lines.data
+      .row.line-item-row
+        .col-xs-12.between
+          | #{line.between}
+      .row.line-item-row
+        .col-xs-6 #{line.description || 'Item description'}
+        .col-xs-2.align-right #{line.quantity}
+        .col-xs-2.align-right
+          if currency_position_before
+            | #{currency_symbol}
+            | #{line.price}
+          if !currency_position_before
+            | #{currency_symbol}
+        .col-xs-2.align-right
+          if currency_position_before
+            | #{currency_symbol}
+            | #{line.amount}
+          if !currency_position_before
+            | #{currency_symbol}
+    .row.totals.line-item-row
+      .col-xs-8
+      .col-xs-2.align-right
+        | Subtotal
+      .col-xs-2.align-right
+        | #{subtotal}
+    .row.line-item-row
+      .col-xs-8
+      .col-xs-2.align-right.total
+        | Amount
+      .col-xs-2.align-right.total
+        | #{total}
