@@ -1,6 +1,6 @@
 {
   "name": "stripe-pdf-generator",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Generate invoices and receipts for Stripe",
   "main": "index.js",
   "scripts": {

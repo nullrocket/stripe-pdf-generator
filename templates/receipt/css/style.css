@@ -141,3 +141,7 @@ h1 {
     color: slategray;
 }
 
+.extra-address {
+    white-space: pre;
+}
+

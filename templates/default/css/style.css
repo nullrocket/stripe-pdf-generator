@@ -140,4 +140,7 @@ h1 {
     font-size: 30px;
     color: slategray;
 }
+.extra-address {
+    white-space: pre;
+}
 
